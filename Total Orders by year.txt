@@ -1,0 +1,8 @@
+# Compare total orders by year
+SELECT EXTRACT (YEAR FROM date) AS YEAR,
+COUNT(*) AS Total_orders
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+WHERE city ='DES MOINES'
+GROUP BY YEAR
+ORDER BY Total_orders DESC
+LIMIT 5
