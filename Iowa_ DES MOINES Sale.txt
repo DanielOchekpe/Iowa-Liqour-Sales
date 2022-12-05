@@ -1,0 +1,85 @@
+Analysis of Iowa Liqour Sales- DES MOINES in Perspective.
+
+This is an exploratory data analysis project with focus on liquor sales in Iowa,
+in which we uncover insights and trends overtime from the sales of liquor in the geographical area.
+The notebook shows different queries from extracting data, data manipulation, 
+and checking for duplicates and a lot more.
+
+Let’s jump right in!
+
+#Total Liqour Orders in Iowa
+SELECT DISTINCT COUNT(*) AS Total_orders
+FROM  `bigquery-public-data.iowa_liquor_sales.sales`
+
+# Checking for duplicates with a unique id
+SELECT invoice_and_item_number,COUNT(invoice_and_item_number)
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+GROUP BY invoice_and_item_number
+HAVING COUNT(invoice_and_item_number) >1 
+
+
+# Top 5 Liqour ordered
+SELECT item_description AS Liqour,
+COUNT( DISTINCT invoice_and_item_number) AS No_of_Orders
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+GROUP BY item_description
+ORDER BY No_of_Orders DESC
+LIMIT 5;
+
+
+
+# Year that grossed the highest order and revenue in DES MOINES
+SELECT EXTRACT(YEAR FROM date) AS YEAR,
+COUNT(invoice_and_item_number) AS total_orders,
+SUM(sale_dollars) AS Revenue
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+WHERE city = 'DES MOINES'
+GROUP BY YEAR
+ORDER BY Revenue DESC
+LIMIT 5;
+
+#Vendor that grossed the highest orders and revenue
+SELECT vendor_name,COUNT (*) AS total_orders,
+SUM(sale_dollars) AS Revenue
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+GROUP BY vendor_name
+ORDER BY Revenue ,total_orders DESC
+LIMIT 5
+
+#Top 5 highest gross profit by brand
+WITH Purchase_Amount AS(
+SELECT item_description,
+SUM(state_bottle_cost * bottles_sold) AS cost
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+GROUP BY item_description),
+ 
+Revenue AS (
+  SELECT item_description,
+  SUM(state_bottle_retail * bottles_sold) AS Sale
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+ GROUP BY item_description)
+
+SELECT item_description AS Brand, Sale - cost AS gross_profit
+FROM Purchase_Amount AS P
+JOIN Revenue AS R
+USING (item_description)
+ORDER BY gross_profit DESC
+LIMIT 5;
+ 
+
+
+# Strt_date of liqour Sales in DES MOINES
+SELECT MIN(date) AS Start_date
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+WHERE city ='DES MOINES'
+
+# End_date of liqour Sales in DES MOINES
+SELECT MAX(date) AS Start_date
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+WHERE city ='DES MOINES'
+
+# all the data from DES MOINES
+SELECT *
+FROM `bigquery-public-data.iowa_liquor_sales.sales` 
+WHERE city ='DES MOINES'
+
